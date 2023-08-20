@@ -256,41 +256,32 @@ export const deploy = async ({ yes, bucket, userAgent }: DeployArguments = {}) =
                     if (config.bucketPrefix) {
                         key = `${config.bucketPrefix}/${key}`;
                     }
-                    const readStream = fs.createReadStream(path);
-                    const hashStream = readStream.pipe(createHash('md5').setEncoding('hex'));
-                    const data = await streamToPromise(hashStream);
 
-                    const tag = `"${data}"`;
-                    const objectUnchanged = keyToETagMap[key] === tag;
+                    try {
+                        const upload = new S3.ManagedUpload({
+                            service: s3,
+                            params: {
+                                Bucket: config.bucketName,
+                                Key: key,
+                                Body: fs.createReadStream(path),
+                                ACL: config.acl === null ? undefined : config.acl ?? 'public-read',
+                                ContentType: mime.getType(path) ?? 'application/octet-stream',
+                                ...getParams(key, params),
+                            },
+                        });
 
-                    isKeyInUse[key] = true;
-
-                    if (!objectUnchanged) {
-                        try {
-                            const upload = new S3.ManagedUpload({
-                                service: s3,
-                                params: {
-                                    Bucket: config.bucketName,
-                                    Key: key,
-                                    Body: fs.createReadStream(path),
-                                    ACL: config.acl === null ? undefined : config.acl ?? 'public-read',
-                                    ContentType: mime.getType(path) ?? 'application/octet-stream',
-                                    ...getParams(key, params),
-                                },
-                            });
-
-                            upload.on('httpUploadProgress', evt => {
-                                spinner.text = chalk`Syncing...
+                        upload.on('httpUploadProgress', evt => {
+                            spinner.text = chalk`Syncing...
 {dim   Uploading {cyan ${key}} ${evt.loaded.toString()}/${evt.total.toString()}}`;
-                            });
+                        });
 
-                            await upload.promise();
-                            spinner.text = chalk`Syncing...\n{dim   Uploaded {cyan ${key}}}`;
-                        } catch (ex) {
-                            console.error(ex);
-                            process.exit(1);
-                        }
+                        await upload.promise();
+                        spinner.text = chalk`Syncing...\n{dim   Uploaded {cyan ${key}}}`;
+                    } catch (ex) {
+                        console.error(ex);
+                        process.exit(1);
                     }
+                    
                 })
             );
         });
