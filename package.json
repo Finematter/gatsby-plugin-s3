@@ -1,5 +1,5 @@
 {
-    "name": "gatsby-plugin-s3",
+    "name": "gatsby-plugin-s3-root",
     "private": true,
     "devDependencies": {
         "@babel/cli": "^7.2.3",
