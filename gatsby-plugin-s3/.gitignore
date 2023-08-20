@@ -72,9 +72,6 @@ jspm_packages/
 .serverless
 
 .idea/
-/*.js
-/*.js.map
-/*.d.ts
 
 /test/
 

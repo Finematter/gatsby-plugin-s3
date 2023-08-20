@@ -42,6 +42,7 @@
         "typescript": "^3.8.3"
     },
     "dependencies": {
+        "@lerna/legacy-package-management": "^7.1.5",
         "gatsby-plugin-s3": "file:gatsby-plugin-s3",
         "gatsby-plugin-s3-e2e-tests": "file:gatsby-plugin-s3-e2e-tests",
         "gatsby-plugin-s3-example-with-redirects": "file:examples\\with-redirects",
